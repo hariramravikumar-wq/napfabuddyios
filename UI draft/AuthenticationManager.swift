@@ -20,31 +20,38 @@ class AuthenticationManager: ObservableObject {
 
     func signIn(email: String, password: String) {
 
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+        guard email.lowercased().hasSuffix("@moe.edu.sg") else {
+            errorMessage = "Only MOE teacher email addresses are allowed."
+            return
+        }
 
-            DispatchQueue.main.async {
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+            Task { @MainActor in
+
+                guard let self else { return }
 
                 if let error = error {
-                    self?.errorMessage = error.localizedDescription
+                    self.errorMessage = error.localizedDescription
                     return
                 }
 
                 guard let user = result?.user else {
-                    self?.errorMessage = "Unable to log in."
+                    self.errorMessage = "Unable to sign in."
                     return
                 }
 
-                if !user.email!.lowercased().hasSuffix("@moe.edu.sg") {
-                    self?.errorMessage = "Only MOE teachers may log in."
-
-                    do {
-                        try Auth.auth().signOut()
-                    } catch { }
-
-                    return
+                do {
+                    try await self.db.collection("teachers")
+                        .document(user.uid)
+                        .updateData([
+                            "lastLogin": Timestamp()
+                        ])
+                } catch {
+                    // Non-fatal: we still log the user in, but record the error
+                    self.errorMessage = error.localizedDescription
                 }
 
-                self?.isLoggedIn = true
+                self.isLoggedIn = true
             }
         }
     }
@@ -57,37 +64,71 @@ class AuthenticationManager: ObservableObject {
     ) {
 
         guard email.lowercased().hasSuffix("@moe.edu.sg") else {
-
             errorMessage = "Email must end with @moe.edu.sg"
-
             return
         }
 
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+            Task { @MainActor in
 
-            DispatchQueue.main.async {
+                guard let self else { return }
 
                 if let error = error {
-
-                    self?.errorMessage = error.localizedDescription
+                    self.errorMessage = error.localizedDescription
                     return
                 }
 
-                guard let uid = result?.user.uid else { return }
+                guard let user = result?.user else {
+                    self.errorMessage = "Unable to create account."
+                    return
+                }
 
-                self?.db.collection("teachers").document(uid).setData([
-
+                let teacherData: [String: Any] = [
                     "email": email,
+                    "displayName": email.components(separatedBy: "@").first ?? "",
                     "role": "teacher",
-                    "createdAt": Timestamp()
+                    "isActive": true,
+                    "createdAt": Timestamp(),
+                    "lastLogin": Timestamp()
+                ]
 
-                ])
-
-                self?.isLoggedIn = true
+                do {
+                    try await self.db.collection("teachers")
+                        .document(user.uid)
+                        .setData(teacherData)
+                    self.isLoggedIn = true
+                } catch {
+                    self.errorMessage = error.localizedDescription
+                }
             }
+        }
+    }
 
+    // MARK: - Check Role
+
+    func fetchTeacherRole(
+        completion: @escaping (String?) -> Void
+    ) {
+
+        guard let uid = Auth.auth().currentUser?.uid else {
+            completion(nil)
+            return
         }
 
+        db.collection("teachers")
+            .document(uid)
+            .getDocument { snapshot, error in
+
+                guard
+                    error == nil,
+                    let data = snapshot?.data()
+                else {
+                    completion(nil)
+                    return
+                }
+
+                completion(data["role"] as? String)
+            }
     }
 
     // MARK: - Logout
@@ -107,5 +148,5 @@ class AuthenticationManager: ObservableObject {
         }
 
     }
-
 }
+
