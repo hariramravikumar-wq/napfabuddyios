@@ -13,7 +13,7 @@ struct ContentView: View {
                     Image(systemName: "clipboard.fill")
                         .font(.system(size: 45))
                         .foregroundColor(.yellow)
-                    
+                
                     Text("NapfaTest Scoring")
                         .font(.system(size: 34, weight: .bold))
                         .foregroundColor(.black)
