@@ -58,6 +58,42 @@ struct Scanner: View {
         "1.6km Run"
     ]
 
+    // MARK: - Best-score upsert helpers
+    private func isHigherBetter(for station: String) -> Bool {
+        // For time-based stations lower is better; others higher is better
+        switch station {
+        case "Shuttle Run", "1.6km Run":
+            return false
+        default:
+            return true
+        }
+    }
+
+    private func parseNumeric(from score: String) -> Double? {
+        // score strings are formatted like "25 reps", "210 cm", or "12.3 sec"
+        // Extract the leading numeric value
+        let parts = score.split(separator: " ")
+        guard let first = parts.first else { return nil }
+        return Double(first.replacingOccurrences(of: ",", with: ""))
+    }
+
+    private func upsertBestRecord(_ newRecord: StationRecord) {
+        if let idx = records.firstIndex(where: { $0.name == newRecord.name && $0.station == newRecord.station }) {
+            let old = records[idx]
+            guard let oldVal = parseNumeric(from: old.score), let newVal = parseNumeric(from: newRecord.score) else {
+                // If parsing fails, prefer keeping the existing to avoid accidental overwrite
+                return
+            }
+            if isHigherBetter(for: newRecord.station) {
+                if newVal > oldVal { records[idx] = newRecord }
+            } else {
+                if newVal < oldVal { records[idx] = newRecord }
+            }
+        } else {
+            records.append(newRecord)
+        }
+    }
+
     var body: some View {
         ZStack {
            
