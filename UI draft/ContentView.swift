@@ -28,18 +28,7 @@ struct ContentView: View {
                         NavigationLink {
                             Scanner()
                         } label: {
-                            Text("Scanner")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(15)
-                        }
-                        
-                        NavigationLink {
-                            ManualInput()
-                        } label: {
-                            Text("Manual  ")
+                            Text("Record;")
                                 .font(.title2)
                                 .foregroundColor(.white)
                                 .padding()
