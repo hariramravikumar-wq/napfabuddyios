@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleIdentifier</key>
+	<string></string>
 	<key>API_KEY</key>
 	<string>AIzaSyCKLs0lXCqhZY0oVOIJc4fZpBDSeC8ApnY</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,18 +15,16 @@
 	<key>PROJECT_ID</key>
 	<string>napfabuddy</string>
 	<key>STORAGE_BUCKET</key>
-	<string>napfabuddy.firebasestorage.app</string>
+	<false/>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
-	<key>GOOGLE_APP_ID</key>
-	<string>1:774284477246:ios:a27aa5e855414153b7a26f</string>
+	<true/>
 </dict>
 </plist>
