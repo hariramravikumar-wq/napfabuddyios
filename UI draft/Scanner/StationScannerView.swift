@@ -9,21 +9,12 @@ struct StationScannerView: View {
             VStack {
                 
                 if let station = scannedStation {
-                    
-                    NavigationLink(
-                        destination: StationEntryView(station: station),
-                        isActive: Binding(
-                            get: { scannedStation != nil },
-                            set: { active in
-                                if !active {
-                                    scannedStation = nil
-                                }
-                            }
-                        )
-                    ) {
+                    NavigationLink {
+                        StationEntryView(station: station)
+                    } label: {
                         EmptyView()
                     }
-                    
+                    .hidden()
                 } else {
                     
                     if #available(iOS 16.0, *) {

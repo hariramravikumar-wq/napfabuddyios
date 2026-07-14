@@ -59,6 +59,17 @@ struct ManageTeachersView: View {
                     .frame(height: 300)
                 }
 
+                NavigationLink {
+                    ManageStudentsView()
+                } label: {
+                    Label("Manage Students", systemImage: "person.2.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+
                 Button {
                     showCreateTeacher = true
                 } label: {

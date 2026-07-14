@@ -1,7 +1,13 @@
 import SwiftUI
 
+@MainActor
 struct ContentView: View {
-    @StateObject private var auth = AuthenticationManager()
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var auth: AuthenticationManager
+
+    init(auth: AuthenticationManager) {
+        _auth = ObservedObject(wrappedValue: auth)
+    }
     
     var body: some View {
         NavigationStack {
@@ -97,6 +103,19 @@ struct ContentView: View {
                             }
                             .padding(.top, 10)
 
+                            NavigationLink {
+                                ManageStudentsView()
+                            } label: {
+                                Text("👨‍🎓 Manage Students")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .frame(width: 320)
+                                    .padding()
+                                    .background(Color.green)
+                                    .cornerRadius(15)
+                            }
+                            .padding(.horizontal)
+
                             if auth.isAdmin {
                                 NavigationLink {
                                     ManageTeachersView()
@@ -114,10 +133,10 @@ struct ContentView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Logged in as: \(auth.teacherName)")
+                            Text("Logged in as: \(auth.teacherName.isEmpty ? "Unknown Teacher" : auth.teacherName)")
                                 .font(.body)
                                 .foregroundColor(.black)
-                            Text("Role: \(auth.teacherRole.capitalized)")
+                            Text("Role: \(auth.teacherRole.isEmpty ? "Unknown" : auth.teacherRole.capitalized)")
                                 .font(.body)
                                 .foregroundColor(.gray)
                         }
@@ -135,6 +154,7 @@ struct ContentView: View {
 
                         Button(action: {
                             auth.signOut()
+                            dismiss()
                         }) {
                             Text("Sign Out")
                                 .font(.title3)
@@ -154,5 +174,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(auth: AuthenticationManager())
 }

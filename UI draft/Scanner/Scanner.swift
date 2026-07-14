@@ -453,7 +453,7 @@ struct Scanner: View {
     }
 }
 
-#Preview {
-    ContentView()
+#Preview("Scanner Preview") {
+    let previewAuth = AuthenticationManager()
+    ContentView(auth: previewAuth)
 }
-
