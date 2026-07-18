@@ -38,22 +38,9 @@
 		0C0DD0FF2F96694900706FE6 /* UI draft.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "UI draft.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		F17DC253300BD41800EA959D /* Exceptions for "UI draft" folder in "UI draft" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"UI-draft-Info.plist",
-			);
-			target = 0C0DD0FE2F96694900706FE6 /* UI draft */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0C0DD1012F96694900706FE6 /* UI draft */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				F17DC253300BD41800EA959D /* Exceptions for "UI draft" folder in "UI draft" target */,
-			);
 			path = "UI draft";
 			sourceTree = "<group>";
 		};

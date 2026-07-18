@@ -10,6 +10,7 @@ import FirebaseFirestore
 struct StationRecord: Identifiable {
     let id = UUID()
     let name: String
+    let studentID: String?
     let station: String
     let score: String
 }
@@ -150,40 +151,30 @@ struct Scanner: View {
 
 
     private func findStudent(id: String) {
-
         let db = Firestore.firestore()
 
-        db.collection("users")
+        db.collection("students")
             .document(id)
             .getDocument { snapshot, error in
-
                 if let error = error {
                     print("Firestore error:", error.localizedDescription)
                     return
                 }
 
-
                 guard let data = snapshot?.data() else {
-                    print("Student not found")
+                    print("Student not found in students collection")
                     return
                 }
 
-
-                let username = data["username"] as? String ?? "Unknown"
-
-
                 let student = Student(
                     id: id,
-                    name: username,
+                    name: data["name"] as? String ?? "Unknown",
                     studentClass: data["studentClass"] as? String ?? "Unknown"
                 )
 
-
                 DispatchQueue.main.async {
-
                     selectedStudent = student
                     showStationEntry = true
-
                 }
             }
     }
@@ -339,10 +330,14 @@ struct Scanner: View {
                             let label = scoreUnitLabel(for: station).replacingOccurrences(of: "Score ", with: "")
                             let unit = label.contains("reps") ? "reps" : label.contains("cm") ? "cm" : "sec"
 
-                            let record = StationRecord(name: trimmedName, station: station, score: "\(quickAddScore) \(unit)")
+                            let record = StationRecord(
+                                name: trimmedName,
+                                studentID: students.first(where: { $0.name == trimmedName })?.id,
+                                station: station,
+                                score: "\(quickAddScore) \(unit)"
+                            )
                             upsertBestRecord(record)
 
-                            
                             manualName = ""
                             quickAddSelectedStation = nil
                             quickAddScore = ""
@@ -497,7 +492,14 @@ struct Scanner: View {
                                                             let label = scoreUnitLabel(for: s).replacingOccurrences(of: "Score ", with: "")
                                                             let unit = label.contains("reps") ? "reps" : label.contains("cm") ? "cm" : "sec"
                                                             let formatted = "\(raw) \(unit)"
-                                                            upsertBestRecord(StationRecord(name: participant, station: s, score: formatted))
+                                                            upsertBestRecord(
+                                                                StationRecord(
+                                                                    name: participant,
+                                                                    studentID: students.first(where: { $0.name == participant })?.id,
+                                                                    station: s,
+                                                                    score: formatted
+                                                                )
+                                                            )
                                                         }
                                                     } label: {
                                                         HStack(spacing: 8) {
@@ -544,7 +546,52 @@ struct Scanner: View {
         }
         .sheet(isPresented: $showStationEntry) {
             if let student = selectedStudent {
-                StationEntryView(station: student.name)
+                StationEntryView(
+                    student: student,
+                    stations: stations,
+                    onSave: { station, score in
+                        let unit: String
+                        switch station {
+                        case "Shuttle Run", "1.6km Run":
+                            unit = "sec"
+                        case "Standing Broad Jump":
+                            unit = "cm"
+                        default:
+                            unit = "reps"
+                        }
+
+                        let formattedScore = "\(score) \(unit)"
+
+                        upsertBestRecord(
+                            StationRecord(
+                                name: student.name,
+                                studentID: student.id,
+                                station: station,
+                                score: formattedScore
+                            )
+                        )
+
+                        Firestore.firestore()
+                            .collection("students")
+                            .document(student.id)
+                            .collection("scores")
+                            .document(station)
+                            .setData([
+                                "station": station,
+                                "score": score,
+                                "unit": unit,
+                                "studentID": student.id,
+                                "studentName": student.name,
+                                "recordedAt": FieldValue.serverTimestamp()
+                            ]) { error in
+                                if let error = error {
+                                    print("Failed to save score:", error.localizedDescription)
+                                } else {
+                                    print("Score saved successfully")
+                                }
+                            }
+                    }
+                )
             }
         }
         .onAppear {
@@ -561,6 +608,80 @@ struct Scanner: View {
         case "Shuttle Run", "1.6km Run": return "Score (sec)"
         case "Standing Broad Jump": return "Score (cm)"
         default: return "Score (reps)"
+        }
+    }
+}
+
+# Add StationEntryView before #Preview
+struct StationEntryView: View {
+    let student: Student
+    let stations: [String]
+    let onSave: (String, String) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedStation = ""
+    @State private var score = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Student") {
+                    Text(student.name)
+                        .font(.headline)
+
+                    if student.studentClass != "Unknown" {
+                        Text("Class: \(student.studentClass)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Section("NAPFA Station") {
+                    Picker("Station", selection: $selectedStation) {
+                        Text("Select a station")
+                            .tag("")
+
+                        ForEach(stations, id: \.self) { station in
+                            Text(station)
+                                .tag(station)
+                        }
+                    }
+
+                    TextField("Enter score", text: $score)
+                        .keyboardType(.decimalPad)
+                }
+
+                Section {
+                    Button {
+                        guard !selectedStation.isEmpty,
+                              !score.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                            return
+                        }
+
+                        onSave(selectedStation, score)
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Save Score")
+                                .fontWeight(.bold)
+                            Spacer()
+                        }
+                    }
+                    .disabled(
+                        selectedStation.isEmpty ||
+                        score.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    )
+                }
+            }
+            .navigationTitle("Record Score")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
