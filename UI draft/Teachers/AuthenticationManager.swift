@@ -17,6 +17,10 @@ class AuthenticationManager: ObservableObject {
     @Published var teacherName = ""
     @Published var teacherRole = ""
 
+    var role: String {
+        teacherRole
+    }
+
     private let db = Firestore.firestore()
 
     // MARK: - Sign In

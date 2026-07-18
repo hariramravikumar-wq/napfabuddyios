@@ -10,6 +10,7 @@ struct Teacher: Identifiable {
 }
 
 struct ManageTeachersView: View {
+    @ObservedObject var auth: AuthenticationManager
     @State private var teachers: [Teacher] = []
     @State private var isLoading = true
 
@@ -60,7 +61,18 @@ struct ManageTeachersView: View {
                 }
 
                 NavigationLink {
-                    ManageStudentsView()
+                    ContentView(auth: auth)
+                } label: {
+                    Label("Teacher Dashboard", systemImage: "house.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.indigo)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                }
+
+                NavigationLink {
+                    ManageStudentsView(auth: AuthenticationManager())
                 } label: {
                     Label("Manage Students", systemImage: "person.2.fill")
                         .frame(maxWidth: .infinity)
@@ -113,5 +125,5 @@ struct ManageTeachersView: View {
 }
 
 #Preview {
-    ManageTeachersView()
+    ManageTeachersView(auth: AuthenticationManager())
 }

@@ -48,63 +48,7 @@ struct ContentView: View {
                             .padding(.horizontal)
 
                             NavigationLink {
-                                StationScannerView()
-                            } label: {
-                                Text("📍 Scan NAPFA Station")
-                                    .font(.title2)
-                                    .foregroundColor(.white)
-                                    .frame(width: 320)
-                                    .padding()
-                                    .background(Color.green)
-                                    .cornerRadius(15)
-                            }
-                            .padding(.horizontal)
-
-                            VStack(spacing: 10) {
-                                Text("Developer Testing")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-
-                                NavigationLink {
-                                    StationEntryView(station: "Push Ups")
-                                } label: {
-                                    Text("🧪 Test Push Up Station")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(width: 280)
-                                        .padding()
-                                        .background(Color.purple)
-                                        .cornerRadius(12)
-                                }
-
-                                NavigationLink {
-                                    StationEntryView(station: "Shuttle Run")
-                                } label: {
-                                    Text("🧪 Test Shuttle Run Station")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(width: 280)
-                                        .padding()
-                                        .background(Color.purple)
-                                        .cornerRadius(12)
-                                }
-
-                                NavigationLink {
-                                    StationEntryView(station: "Standing Broad Jump")
-                                } label: {
-                                    Text("🧪 Test Standing Broad Jump")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(width: 280)
-                                        .padding()
-                                        .background(Color.purple)
-                                        .cornerRadius(12)
-                                }
-                            }
-                            .padding(.top, 10)
-
-                            NavigationLink {
-                                ManageStudentsView()
+                                ManageStudentsView(auth: AuthenticationManager())
                             } label: {
                                 Text("👨‍🎓 Manage Students")
                                     .font(.title2)
@@ -118,7 +62,7 @@ struct ContentView: View {
 
                             if auth.isAdmin {
                                 NavigationLink {
-                                    ManageTeachersView()
+                                    ManageTeachersView(auth: AuthenticationManager())
                                 } label: {
                                     Text("👨‍🏫 Manage Teachers")
                                         .font(.title2)

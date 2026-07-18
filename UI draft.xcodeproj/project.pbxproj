@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F15733EF3006949500F7D7B8 /* SkipUI in Frameworks */ = {isa = PBXBuildFile; productRef = F15733EE3006949500F7D7B8 /* SkipUI */; };
 		F1C8F0B43004D4B500E8C229 /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = F1C8F0B33004D4B500E8C229 /* FirebaseAI */; };
 		F1C8F0B63004D4B500E8C229 /* FirebaseAILogic in Frameworks */ = {isa = PBXBuildFile; productRef = F1C8F0B53004D4B500E8C229 /* FirebaseAILogic */; };
 		F1C8F0B83004D4B500E8C229 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = F1C8F0B73004D4B500E8C229 /* FirebaseAnalytics */; };
@@ -60,6 +61,7 @@
 				F1C8F0B43004D4B500E8C229 /* FirebaseAI in Frameworks */,
 				F1C8F0C83004D4B500E8C229 /* FirebaseCrashlytics in Frameworks */,
 				F1C8F0D23004D4B500E8C229 /* FirebaseFunctionsCombine-Community in Frameworks */,
+				F15733EF3006949500F7D7B8 /* SkipUI in Frameworks */,
 				F1C8F0E23004D4B500E8C229 /* FirebaseStorageCombine-Community in Frameworks */,
 				F1C8F0CA3004D4B500E8C229 /* FirebaseDatabase in Frameworks */,
 				F1C8F0E03004D4B500E8C229 /* FirebaseStorage in Frameworks */,
@@ -140,6 +142,7 @@
 				F1C8F0DD3004D4B500E8C229 /* FirebaseRemoteConfig */,
 				F1C8F0DF3004D4B500E8C229 /* FirebaseStorage */,
 				F1C8F0E13004D4B500E8C229 /* FirebaseStorageCombine-Community */,
+				F15733EE3006949500F7D7B8 /* SkipUI */,
 			);
 			productName = "UI draft";
 			productReference = 0C0DD0FF2F96694900706FE6 /* UI draft.app */;
@@ -171,6 +174,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F1C8F0B23004D4B500E8C229 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				F15733ED3006949500F7D7B8 /* XCRemoteSwiftPackageReference "skip-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0C0DD1002F96694900706FE6 /* Products */;
@@ -341,7 +345,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -374,7 +378,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -416,6 +420,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F15733ED3006949500F7D7B8 /* XCRemoteSwiftPackageReference "skip-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/skiptools/skip-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.58.0;
+			};
+		};
 		F1C8F0B23004D4B500E8C229 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
@@ -427,6 +439,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F15733EE3006949500F7D7B8 /* SkipUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F15733ED3006949500F7D7B8 /* XCRemoteSwiftPackageReference "skip-ui" */;
+			productName = SkipUI;
+		};
 		F1C8F0B33004D4B500E8C229 /* FirebaseAI */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F1C8F0B23004D4B500E8C229 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

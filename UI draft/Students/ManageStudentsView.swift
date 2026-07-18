@@ -2,7 +2,7 @@ import SwiftUI
 import FirebaseFirestore
 
 struct ManageStudentsView: View {
-    
+    @ObservedObject var auth: AuthenticationManager
     @State private var students: [Student] = []
     @State private var showAddStudent = false
     @State private var searchText = ""
@@ -37,16 +37,26 @@ struct ManageStudentsView: View {
                 }
             }
             .searchable(text: $searchText)
+            .refreshable {
+                loadStudents()
+            }
         }
         .navigationTitle("Manage Students")
         .toolbar {
+            Button {
+                loadStudents()
+            } label: {
+                Image(systemName: "arrow.clockwise")
+            }
             Button {
                 showAddStudent = true
             } label: {
                 Image(systemName: "plus")
             }
         }
-        .sheet(isPresented: $showAddStudent) {
+        .sheet(isPresented: $showAddStudent, onDismiss: {
+            loadStudents()
+        }) {
             NavigationStack {
                 AddStudentView()
             }
@@ -62,7 +72,7 @@ struct ManageStudentsView: View {
             
             students = documents.map { document in
                 let data = document.data()
-                
+                // TODO: Add dateOfBirth, gender, qrCodeString to Student model if not present
                 return Student(
                     id: document.documentID,
                     name: data["name"] as? String ?? "Unknown",

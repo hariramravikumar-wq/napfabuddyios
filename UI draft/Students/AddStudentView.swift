@@ -7,8 +7,13 @@ struct AddStudentView: View {
     
     @State private var name = ""
     @State private var studentClass = ""
+    @State private var includeDateOfBirth = false
+    @State private var dateOfBirth = Date()
     @State private var message = ""
     @State private var showSuccess = false
+    @State private var createdStudentID = ""
+    @State private var showQRCode = false
+    @State private var showSuccessAlert = false
     
     private let db = Firestore.firestore()
     
@@ -44,6 +49,21 @@ struct AddStudentView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(12)
+                        
+                        Toggle("Add Date of Birth", isOn: $includeDateOfBirth)
+                            .padding(.horizontal)
+
+                        if includeDateOfBirth {
+                            DatePicker(
+                                "Date of Birth",
+                                selection: $dateOfBirth,
+                                displayedComponents: .date
+                            )
+                            .datePickerStyle(.compact)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(12)
+                        }
                             
                         Button {
                             addStudent()
@@ -80,6 +100,20 @@ struct AddStudentView: View {
                 }
             }
         }
+        .navigationDestination(isPresented: $showQRCode) {
+            StudentQRCodeView(
+                studentID: createdStudentID,
+                studentName: name,
+                studentClass: studentClass
+            )
+        }
+        .alert("Student Added", isPresented: $showSuccessAlert) {
+            Button("OK") {
+                showQRCode = true
+            }
+        } message: {
+            Text("The student was added successfully.")
+        }
     }
     
     func addStudent() {
@@ -88,9 +122,17 @@ struct AddStudentView: View {
             return
         }
         
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        
+        let ref = db.collection("students").document()
+        let studentID = ref.documentID
+
         let data: [String: Any] = [
+            "id": studentID,
             "name": name,
             "studentClass": studentClass,
+            "dateOfBirth": includeDateOfBirth ? formatter.string(from: dateOfBirth) : "",
             "sitUps": "",
             "pushUps": "",
             "pullUps": "",
@@ -99,13 +141,14 @@ struct AddStudentView: View {
             "sitAndReach": "",
             "run24km": ""
         ]
-        
-        db.collection("students").addDocument(data: data) { error in
+
+        ref.setData(data) { error in
             if let error = error {
                 message = "Error: \(error.localizedDescription)"
             } else {
                 message = "Student added successfully ✅"
-                showSuccess = true
+                createdStudentID = studentID
+                showSuccessAlert = true
             }
         }
     }

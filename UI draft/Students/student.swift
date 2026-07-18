@@ -4,7 +4,13 @@ struct Student: Identifiable {
     let id: String
     let name: String
     let studentClass: String
-    
+
+    var dateOfBirth: String?
+    var gender: String?
+    var height: String?
+    var weight: String?
+    var qrCodeString: String?
+
     var sitUps: String?
     var pushUps: String?
     var pullUps: String?

@@ -80,21 +80,15 @@ struct TeacherLoginView: View {
 
                     if !auth.errorMessage.isEmpty {
                         Text(auth.errorMessage)
-                            .foregroundColor(.white)
+                            .font(.subheadline)
                             .bold()
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Color.red.opacity(0.8))
+                            .cornerRadius(10)
                     }
 
-                    NavigationLink(isActive: $showTeacherHome) {
-                        ContentView(auth: auth)
-                    } label: {
-                        EmptyView()
-                    }
-
-                    NavigationLink(isActive: $showAdminHome) {
-                        ManageTeachersView()
-                    } label: {
-                        EmptyView()
-                    }
 
                     Spacer()
                 }
@@ -103,7 +97,13 @@ struct TeacherLoginView: View {
             .onAppear {
                 focusedField = .email
             }
-            .onChange(of: auth.isLoggedIn) { loggedIn in
+            .navigationDestination(isPresented: $showTeacherHome) {
+                ContentView(auth: auth)
+            }
+            .navigationDestination(isPresented: $showAdminHome) {
+                ManageTeachersView(auth: auth)
+            }
+            .onChange(of: auth.isLoggedIn) { _, loggedIn in
                 if loggedIn {
                     if auth.isAdmin {
                         showAdminHome = true

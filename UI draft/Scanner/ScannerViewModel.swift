@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import FirebaseFirestore
 
 @MainActor
 class ScannerViewModel: ObservableObject {
@@ -12,34 +13,55 @@ class ScannerViewModel: ObservableObject {
 
     func processQRCode(_ qrText: String) {
 
-        // QR Format:
-        // Name|Class|ShuttleRun|SitUps|PushUps|StandingBroadJump|2.4km
+        let studentID = qrText.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        let components = qrText.components(separatedBy: "|")
+        Firestore.firestore()
+            .collection("students")
+            .document(studentID)
+            .getDocument { [weak self] snapshot, error in
 
-        guard components.count == 7 else {
-            errorMessage = "Invalid QR Code."
-            showError = true
-            return
-        }
+                guard let self else { return }
 
-        let student = Student(
-            id: UUID().uuidString,
-            name: components[0],
-            studentClass: components[1],
-            sitUps: components[3],
-            pushUps: components[4],
-            pullUps: nil,
-            shuttleRun: components[2],
-            standingBroadJump: components[5],
-            run24km: components[6]
-        )
+                DispatchQueue.main.async {
 
-        scannedStudent = student
+                    if let error = error {
+                        self.errorMessage = error.localizedDescription
+                        self.showError = true
+                        return
+                    }
 
-        FirestoreManager.shared.saveStudent(student)
+                    guard
+                        let snapshot = snapshot,
+                        snapshot.exists,
+                        let data = snapshot.data()
+                    else {
+                        self.errorMessage = "Student not found."
+                        self.showError = true
+                        return
+                    }
 
-        uploadSuccessful = true
+                    let student = Student(
+                        id: snapshot.documentID,
+                        name: data["name"] as? String ?? "",
+                        studentClass: data["studentClass"] as? String ?? "",
+                        dateOfBirth: data["dateOfBirth"] as? String,
+                        gender: data["gender"] as? String,
+                        height: data["height"] as? String,
+                        weight: data["weight"] as? String,
+                        qrCodeString: snapshot.documentID,
+                        sitUps: data["sitUps"] as? String,
+                        pushUps: data["pushUps"] as? String,
+                        pullUps: data["pullUps"] as? String,
+                        shuttleRun: data["shuttleRun"] as? String,
+                        standingBroadJump: data["standingBroadJump"] as? String,
+                        sitAndReach: data["sitAndReach"] as? String,
+                        run24km: data["run24km"] as? String
+                    )
+
+                    self.scannedStudent = student
+                    self.uploadSuccessful = true
+                }
+            }
     }
 
     func reset() {

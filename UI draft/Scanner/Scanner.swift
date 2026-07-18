@@ -5,6 +5,7 @@
 //  Created by TOH JUN CHEN on 17/6/26.
 //
 import SwiftUI
+import FirebaseFirestore
 
 struct StationRecord: Identifiable {
     let id = UUID()
@@ -14,13 +15,44 @@ struct StationRecord: Identifiable {
 }
 
 struct Scanner: View {
+    private func loadStudents() {
+        let db = Firestore.firestore()
+
+        db.collection("users").getDocuments { snapshot, error in
+            if let error = error {
+                print("Failed to load students:", error.localizedDescription)
+                return
+            }
+
+            let loadedStudents = snapshot?.documents.compactMap { document -> Student? in
+                let data = document.data()
+
+                return Student(
+                    id: document.documentID,
+                    name: data["username"] as? String ?? "Unknown",
+                    studentClass: data["studentClass"] as? String ?? "Unknown"
+                )
+            } ?? []
+
+            DispatchQueue.main.async {
+                students = loadedStudents
+            }
+        }
+    }
     
     @State private var students: [Student] = []
     @State private var records: [StationRecord] = []
-    
-   
+
     @State private var activeParticipantName = ""
     @State private var manualName: String = ""
+
+    // QR Scanner
+    @State private var showQRScanner = false
+    @State private var scannedID = ""
+
+    // Student sheet
+    @State private var selectedStudent: Student?
+    @State private var showStationEntry = false
 
     @State private var quickAddSelectedStation: String? = nil
     @State private var quickAddScore: String = ""
@@ -92,7 +124,55 @@ struct Scanner: View {
             records.append(newRecord)
         }
     }
+    private func handleQRScan(_ result: String) {
 
+        showQRScanner = false
+        scannedID = result
+
+        print("QR Result:", result)
+
+        findStudent(id: result)
+    }
+
+
+    private func findStudent(id: String) {
+
+        let db = Firestore.firestore()
+
+        db.collection("users")
+            .document(id)
+            .getDocument { snapshot, error in
+
+                if let error = error {
+                    print("Firestore error:", error.localizedDescription)
+                    return
+                }
+
+
+                guard let data = snapshot?.data() else {
+                    print("Student not found")
+                    return
+                }
+
+
+                let username = data["username"] as? String ?? "Unknown"
+
+
+                let student = Student(
+                    id: id,
+                    name: username,
+                    studentClass: data["studentClass"] as? String ?? "Unknown"
+                )
+
+
+                DispatchQueue.main.async {
+
+                    selectedStudent = student
+                    showStationEntry = true
+
+                }
+            }
+    }
     var body: some View {
         ZStack {
            
@@ -143,18 +223,9 @@ struct Scanner: View {
 
                         
                         Button {
-                            
-                            let payload = "Scanned Participant|Push-ups|25"
-                            let parts = payload.split(separator: "|").map(String.init)
-                            if parts.count == 3 {
-                                let name = parts[0]
-                                let station = parts[1]
-                                let value = parts[2]
-                                let label = scoreUnitLabel(for: station).replacingOccurrences(of: "Score ", with: "")
-                                let unit = label.contains("reps") ? "reps" : label.contains("cm") ? "cm" : "sec"
-                                let record = StationRecord(name: name, station: station, score: "\(value) \(unit)")
-                                upsertBestRecord(record)
-                            }
+
+                            showQRScanner = true
+
                         } label: {
                             HStack(spacing: 8) {
                                 Image(systemName: "camera.fill")
@@ -184,16 +255,23 @@ struct Scanner: View {
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(Color(red: 0.18, green: 0.24, blue: 0.35))
 
-                            TextField("Enter participant name", text: $manualName)
-                                .textInputAutocapitalization(.words)
-                                .autocorrectionDisabled()
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color(.systemGray4), lineWidth: 1)
-                                )
+                            Picker("Select participant", selection: $manualName) {
+                                Text("Select participant")
+                                    .tag("")
+
+                                ForEach(students, id: \.id) { student in
+                                    Text(student.name)
+                                        .tag(student.name)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(.systemGray4), lineWidth: 1)
+                            )
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
@@ -440,6 +518,23 @@ struct Scanner: View {
                 .padding(.bottom, 30)
             }
             
+        }
+        .sheet(isPresented: $showQRScanner) {
+            if #available(iOS 16.0, *) {
+                QRScannerView { result in
+                    handleQRScan(result)
+                }
+            } else {
+                Text("QR Scanner requires iOS 16+")
+            }
+        }
+        .sheet(isPresented: $showStationEntry) {
+            if let student = selectedStudent {
+                StationEntryView(station: student.name)
+            }
+        }
+        .onAppear {
+            loadStudents()
         }
     }
     
