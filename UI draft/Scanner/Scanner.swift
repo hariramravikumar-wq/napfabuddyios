@@ -18,26 +18,40 @@ struct Scanner: View {
     private func loadStudents() {
         let db = Firestore.firestore()
 
-        db.collection("users").getDocuments { snapshot, error in
-            if let error = error {
-                print("Failed to load students:", error.localizedDescription)
-                return
+        db.collection("students")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Failed to load students:", error.localizedDescription)
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    print("No documents found in students collection")
+                    return
+                }
+
+                let loadedStudents = documents.compactMap { document -> Student? in
+                    let data = document.data()
+
+                    guard let name = data["name"] as? String,
+                          !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                        return nil
+                    }
+
+                    return Student(
+                        id: document.documentID,
+                        name: name,
+                        studentClass: data["studentClass"] as? String ?? "Unknown"
+                    )
+                }
+                .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+                print("Loaded students:", loadedStudents.map { $0.name })
+
+                DispatchQueue.main.async {
+                    students = loadedStudents
+                }
             }
-
-            let loadedStudents = snapshot?.documents.compactMap { document -> Student? in
-                let data = document.data()
-
-                return Student(
-                    id: document.documentID,
-                    name: data["username"] as? String ?? "Unknown",
-                    studentClass: data["studentClass"] as? String ?? "Unknown"
-                )
-            } ?? []
-
-            DispatchQueue.main.async {
-                students = loadedStudents
-            }
-        }
     }
     
     @State private var students: [Student] = []
@@ -259,8 +273,8 @@ struct Scanner: View {
                                 Text("Select participant")
                                     .tag("")
 
-                                ForEach(students, id: \.id) { student in
-                                    Text(student.name)
+                                ForEach(students) { student in
+                                    Text("\(student.name)\(student.studentClass == "Unknown" ? "" : " — \(student.studentClass)")")
                                         .tag(student.name)
                                 }
                             }
@@ -534,6 +548,9 @@ struct Scanner: View {
             }
         }
         .onAppear {
+            loadStudents()
+        }
+        .refreshable {
             loadStudents()
         }
     }
