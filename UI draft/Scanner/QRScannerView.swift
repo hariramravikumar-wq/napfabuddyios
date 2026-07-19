@@ -72,9 +72,13 @@ struct QRScannerView: UIViewControllerRepresentable {
 
                 guard let value = barcode.payloadStringValue else { return }
 
-                parent.completion(value)
+                dataScanner.stopScanning()
 
-                dataScanner.dismiss(animated: true)
+                DispatchQueue.main.async {
+                    dataScanner.dismiss(animated: true) {
+                        self.parent.completion(value)
+                    }
+                }
 
             default:
                 break
@@ -92,9 +96,13 @@ struct QRScannerView: UIViewControllerRepresentable {
 
                 guard let value = barcode.payloadStringValue else { return }
 
-                parent.completion(value)
+                dataScanner.stopScanning()
 
-                dataScanner.dismiss(animated: true)
+                DispatchQueue.main.async {
+                    dataScanner.dismiss(animated: true) {
+                        self.parent.completion(value)
+                    }
+                }
 
             default:
                 break
