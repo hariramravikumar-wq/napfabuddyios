@@ -546,7 +546,7 @@ struct Scanner: View {
         }
         .sheet(isPresented: $showStationEntry) {
             if let student = selectedStudent {
-                StationEntryView(
+                ScannerStationEntryView(
                     student: student,
                     stations: stations,
                     onSave: { station, score in
@@ -612,8 +612,7 @@ struct Scanner: View {
     }
 }
 
-# Add StationEntryView before #Preview
-struct StationEntryView: View {
+struct ScannerStationEntryView: View {
     let student: Student
     let stations: [String]
     let onSave: (String, String) -> Void
